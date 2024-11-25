@@ -1,0 +1,150 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { uploadData, downloadData, list, remove } from 'aws-amplify/storage';
+import { getCurrentUser, signOut } from 'aws-amplify/auth';
+import { useRouter } from 'next/navigation';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Download, Trash2, LogOut } from 'lucide-react';
+
+export default function Dashboard() {
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const router = useRouter();
+
+  const checkAuth = async () => {
+    try {
+      await getCurrentUser();
+    } catch {
+      router.push('/auth');
+    }
+  };
+
+  const listFiles = async () => {
+    try {
+      const result = await list('');
+      setFiles(result.items);
+    } catch (err) {
+      console.error('Error listing files:', err);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+    listFiles();
+  }, [router]); // Added router to dependencies
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      await uploadData({
+        key: file.name,
+        data: file,
+        options: {
+          contentType: file.type,
+        },
+      });
+      await listFiles();
+    } catch (err) {
+      console.error('Error uploading file:', err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDownload = async (key) => {
+    try {
+      const result = await downloadData({
+        key,
+        options: {
+          download: true,
+        },
+      });
+      const url = URL.createObjectURL(result.body);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = key;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+    }
+  };
+
+  const handleDelete = async (key) => {
+    try {
+      await remove({ key });
+      await listFiles();
+    } catch (err) {
+      console.error('Error deleting file:', err);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/auth');
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <Card className="max-w-4xl mx-auto">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <h1 className="text-2xl font-bold">File Management</h1>
+          <Button variant="outline" onClick={handleSignOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Input
+                type="file"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="flex-1"
+              />
+              {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+            </div>
+
+            <div className="space-y-2">
+              {files.map((file) => (
+                <div
+                  key={file.key}
+                  className="flex items-center justify-between p-3 bg-white rounded-lg border"
+                >
+                  <span className="truncate flex-1">{file.key}</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(file.key)}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(file.key)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
