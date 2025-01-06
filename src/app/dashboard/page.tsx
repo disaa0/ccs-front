@@ -32,8 +32,10 @@ export default function Dashboard() {
 
   const listFiles = async () => {
     try {
-      const result = await list({ path: '' });
-      setFiles(result.items.map(item => ({ key: item.path })) || []);
+      const result = await list({ path: '' }); // List files in the root directory
+      setFiles(
+        result.items.map((item) => ({ key: item.path.replace(/^public\//, '') })) || []
+      ); // Remove the "public/" prefix
     } catch (err) {
       console.error('Error listing files:', (err as Error).message);
     }
@@ -51,7 +53,12 @@ export default function Dashboard() {
     try {
       setUploading(true);
 
-      await uploadData({ key: file.name, data: file, options: { contentType: file.type } });
+      // Upload file without duplicating the "public/" prefix
+      await uploadData({
+        key: file.name, // Use the file name as the key
+        data: file,
+        options: { contentType: file.type },
+      });
       await listFiles();
     } catch (err) {
       console.error('Error uploading file:', (err as Error).message);
@@ -62,8 +69,13 @@ export default function Dashboard() {
 
   const handleDownload = async (key: string) => {
     try {
-      const { url } = await getUrl({ key });
-      const urlString = url.toString(); // Convert URL object to string
+      const fullKey = `${key}`;
+      const { url } = await getUrl({ key: fullKey });
+  
+      // Explicitly convert the URL object to a string
+      const urlString = typeof url === 'string' ? url : url.toString();
+  
+      // Create a temporary link for downloading the file
       const a = document.createElement('a');
       a.href = urlString;
       a.download = key;
@@ -75,7 +87,9 @@ export default function Dashboard() {
 
   const handleDelete = async (key: string) => {
     try {
-      await remove({ key });
+      // Construct the full key if the prefix is required
+      const fullKey = `${key}`;
+      await remove({ key: fullKey });
       await listFiles();
     } catch (err) {
       console.error('Error deleting file:', (err as Error).message);
