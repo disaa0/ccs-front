@@ -17,7 +17,7 @@ export default function AuthPage() {
     try {
       const user = await getCurrentUser();
       if (user) {
-        // router.push('/dashboard');
+        router.push('/dashboard'); // Redirect if already authenticated
       }
     } catch (error) {
       console.log('Not authenticated');
@@ -27,7 +27,6 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full">
-
         <Authenticator
           initialState="signIn"
           components={{
@@ -44,19 +43,28 @@ export default function AuthPage() {
           services={{
             async validateCustomSignUp(formData) {
               const errors: { [key: string]: string } = {};
-              // if (!formData.username || formData.username.length < 3) {
-              //   errors.username = 'Username must be at least 3 characters';
-              // }
               return errors;
             },
           }}
         >
-          {({ signOut, user }) => (
-            <main>
-              <h1>Hello {user?.username ?? 'Guest'}</h1>
-              <button onClick={signOut}>Sign out</button>
-            </main>
-          )}
+          {({ user }) => {
+            // Redirect if user exists
+            if (user) {
+              router.push('/dashboard');
+              return (
+                <div className="text-center py-6">
+                  <p className="text-gray-500">Redirecting to the dashboard...</p>
+                </div>
+              );
+            }
+
+            // Fallback UI when no user is authenticated
+            return (
+              <div className="text-center py-6">
+                <p className="text-gray-500">Please wait...</p>
+              </div>
+            );
+          }}
         </Authenticator>
       </div>
     </div>

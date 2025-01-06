@@ -9,6 +9,9 @@ export const amplifyConfig = {
         email: true,
         username: true,
       },
+      credentialsProvider: {
+        identityPoolId: process.env.NEXT_PUBLIC_IDENTITY_POOL_ID!,
+      },
     },
   },
   API: {
@@ -23,6 +26,7 @@ export const amplifyConfig = {
     S3: {
       bucket: process.env.NEXT_PUBLIC_S3_BUCKET!,
       region: process.env.NEXT_PUBLIC_AWS_REGION!,
+      defaultAccessLevel: 'guest', // or 'protected' if needed
     },
   },
 };
