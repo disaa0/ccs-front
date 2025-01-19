@@ -17,7 +17,7 @@ export default function AuthPage() {
     try {
       const user = await getCurrentUser();
       if (user) {
-        router.push('/dashboard'); // Redirect if already authenticated
+        router.push('/dashboard');
       }
     } catch (error) {
       console.log('Not authenticated');

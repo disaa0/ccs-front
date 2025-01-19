@@ -16,7 +16,7 @@ export const amplifyConfig = {
   },
   API: {
     REST: {
-      FileAPI: {
+      tul_ccs_api: {
         endpoint: process.env.NEXT_PUBLIC_API_ENDPOINT!,
         region: process.env.NEXT_PUBLIC_AWS_REGION!,
       },
