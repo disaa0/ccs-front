@@ -451,36 +451,7 @@ export default function Dashboard() {
                 disabled={uploading}
                 className="flex-1"
               />
-              <Button
-                variant="outline"
-                onClick={() => setShowNewFolderInput(true)}
-                disabled={showNewFolderInput}
-              >
-                <FolderPlus className="w-4 h-4 mr-2" /> New Folder
-              </Button>
             </div>
-
-            {showNewFolderInput && (
-              <div className="flex items-center gap-2">
-                <Input
-                  type="text"
-                  placeholder="Folder name"
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleCreateDirectory}>Create</Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowNewFolderInput(false);
-                    setNewFolderName('');
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
 
             {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
             <div className="space-y-2">
