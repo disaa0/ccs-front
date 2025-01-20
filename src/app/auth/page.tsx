@@ -5,6 +5,7 @@ import '@aws-amplify/ui-react/styles.css';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { getCurrentUser } from 'aws-amplify/auth';
+import { logEvent } from '@/lib/logEvent';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function AuthPage() {
     try {
       const user = await getCurrentUser();
       if (user) {
+        await logEvent(user.username, "login", "User logged in");
         router.push('/dashboard');
       }
     } catch (error) {
@@ -50,6 +52,7 @@ export default function AuthPage() {
           {({ user }) => {
             // Redirect if user exists
             if (user) {
+              logEvent(user.username, "login", "User logged in");
               router.push('/dashboard');
               return (
                 <div className="text-center py-6">
