@@ -87,11 +87,11 @@ export default function Dashboard() {
     const ext = filename.toLowerCase().split('.').pop();
     return ext === 'zip';
   };
+
   const processServerValidation = async (tempKey: string, finalKey: string, filename: string): Promise<boolean> => {
     const session = await fetchAuthSession();
     const token = session.tokens?.idToken?.toString();
 
-    // Remove the leading slash if present and strip bucket name from path
     const cleanTempKey = getAbsolutePath(tempKey.replace(/^\//, ''));
     const cleanFinalKey = getAbsolutePath(finalKey.replace(/^\//, ''));
 
@@ -111,15 +111,20 @@ export default function Dashboard() {
           }
         }
       }).response;
+      
       const result = await response.body.json() as { valid: boolean; message: string };
+      
       if (!result?.valid) {
-        setError(result?.message || 'Invalid file');
+        // Display the specific error message from the backend
+        setError(`Validation failed: ${result.message}`);
         return false;
       }
       return true;
     } catch (err) {
+      // Enhanced error handling to capture more specific error messages
+      const errorMessage = err instanceof Error ? err.message : 'Failed to validate file';
       console.error('Validation error:', err);
-      setError('Failed to validate file');
+      setError(`File validation failed: ${errorMessage}`);
       return false;
     }
   };
